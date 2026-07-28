@@ -1,0 +1,6 @@
+---
+title: "Modeling"
+format: html
+author: "Evan Whitfield"
+---
+
