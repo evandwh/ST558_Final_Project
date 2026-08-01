@@ -3,5 +3,39 @@ title: "EDA"
 format: html
 author: "Evan Whitfield"
 ---
+```{r}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(psych)
+water_data <- read_csv("Data/water_potability.csv")
+water_data <- water_data |>
+  mutate(Potability = factor(Potability,
+                             levels = c(0, 1),
+                             labels = c("Not Potable", "Potable")))
+
+water_data
+```
+
+```{r}
+str(water_data)
+```
+
+```{r}
+describe(water_data)
+```
+
+
+```{r}
+colSums(is.na(water_data))
+```
+
+```{r}
+water_data_trimmed <- water_data |>
+  drop_na()
+
+describe(water_data_trimmed)
+```
+
 
 [Click here for the Modeling Page](Modeling.html)

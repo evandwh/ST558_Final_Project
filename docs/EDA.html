@@ -24,6 +24,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -110,6 +145,152 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'readr' was built under R version 4.4.3</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'tidyr' was built under R version 4.4.3</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'dplyr' was built under R version 4.4.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(psych)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>water_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Data/water_potability.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 3276 Columns: 10</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+dbl (10): ph, Hardness, Solids, Chloramines, Sulfate, Conductivity, Organic_...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="ot">&lt;-</span> water_data <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Potability =</span> <span class="fu">factor</span>(Potability,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                             <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Not Potable"</span>, <span class="st">"Potable"</span>)))</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>water_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3,276 × 10
+      ph Hardness Solids Chloramines Sulfate Conductivity Organic_carbon
+   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;   &lt;dbl&gt;        &lt;dbl&gt;          &lt;dbl&gt;
+ 1 NA        205. 20791.        7.30    369.         564.          10.4 
+ 2  3.72     129. 18630.        6.64     NA          593.          15.2 
+ 3  8.10     224. 19910.        9.28     NA          419.          16.9 
+ 4  8.32     214. 22018.        8.06    357.         363.          18.4 
+ 5  9.09     181. 17979.        6.55    310.         398.          11.6 
+ 6  5.58     188. 28749.        7.54    327.         280.           8.40
+ 7 10.2      248. 28750.        7.51    394.         284.          13.8 
+ 8  8.64     203. 13672.        4.56    303.         475.          12.4 
+ 9 NA        119. 14286.        7.80    269.         389.          12.7 
+10 11.2      227. 25485.        9.08    404.         564.          17.9 
+# ℹ 3,266 more rows
+# ℹ 3 more variables: Trihalomethanes &lt;dbl&gt;, Turbidity &lt;dbl&gt;, Potability &lt;fct&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(water_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [3,276 × 10] (S3: tbl_df/tbl/data.frame)
+ $ ph             : num [1:3276] NA 3.72 8.1 8.32 9.09 ...
+ $ Hardness       : num [1:3276] 205 129 224 214 181 ...
+ $ Solids         : num [1:3276] 20791 18630 19910 22018 17979 ...
+ $ Chloramines    : num [1:3276] 7.3 6.64 9.28 8.06 6.55 ...
+ $ Sulfate        : num [1:3276] 369 NA NA 357 310 ...
+ $ Conductivity   : num [1:3276] 564 593 419 363 398 ...
+ $ Organic_carbon : num [1:3276] 10.4 15.2 16.9 18.4 11.6 ...
+ $ Trihalomethanes: num [1:3276] 87 56.3 66.4 100.3 32 ...
+ $ Turbidity      : num [1:3276] 2.96 4.5 3.06 4.63 4.08 ...
+ $ Potability     : Factor w/ 2 levels "Not Potable",..: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(water_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                vars    n     mean      sd   median  trimmed     mad    min
+ph                 1 2785     7.08    1.59     7.04     7.07    1.46   0.00
+Hardness           2 3276   196.37   32.88   196.97   196.51   29.42  47.43
+Solids             3 3276 22014.09 8768.57 20927.83 21473.15 8613.12 320.94
+Chloramines        4 3276     7.12    1.58     7.13     7.12    1.47   0.35
+Sulfate            5 2495   333.78   41.42   333.07   333.68   38.69 129.00
+Conductivity       6 3276   426.21   80.82   421.88   423.90   85.82 181.48
+Organic_carbon     7 3276    14.28    3.31    14.22    14.29    3.31   2.20
+Trihalomethanes    8 3114    66.40   16.18    66.62    66.54   15.93   0.74
+Turbidity          9 3276     3.97    0.78     3.96     3.97    0.79   1.45
+Potability*       10 3276     1.39    0.49     1.00     1.36    0.00   1.00
+                     max    range  skew kurtosis     se
+ph                 14.00    14.00  0.03     0.71   0.03
+Hardness          323.12   275.69 -0.04     0.61   0.57
+Solids          61227.20 60906.25  0.62     0.44 153.20
+Chloramines        13.13    12.78 -0.01     0.58   0.03
+Sulfate           481.03   352.03 -0.04     0.64   0.83
+Conductivity      753.34   571.86  0.26    -0.28   1.41
+Organic_carbon     28.30    26.10  0.03     0.04   0.06
+Trihalomethanes   124.00   123.26 -0.08     0.23   0.29
+Turbidity           6.74     5.29 -0.01    -0.07   0.01
+Potability*         2.00     1.00  0.45    -1.80   0.01</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(water_data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             ph        Hardness          Solids     Chloramines         Sulfate 
+            491               0               0               0             781 
+   Conductivity  Organic_carbon Trihalomethanes       Turbidity      Potability 
+              0               0             162               0               0 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>water_data_trimmed <span class="ot">&lt;-</span> water_data <span class="sc">|&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(water_data_trimmed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                vars    n     mean      sd   median  trimmed     mad    min
+ph                 1 2011     7.09    1.57     7.03     7.07    1.46   0.23
+Hardness           2 2011   195.97   32.64   197.19   196.19   29.46  73.49
+Solids             3 2011 21917.44 8642.24 20933.51 21392.00 8534.28 320.94
+Chloramines        4 2011     7.13    1.58     7.14     7.13    1.45   1.39
+Sulfate            5 2011   333.22   41.21   332.23   333.09   38.12 129.00
+Conductivity       6 2011   426.53   80.71   423.46   424.28   85.82 201.62
+Organic_carbon     7 2011    14.36    3.32    14.32    14.37    3.35   2.20
+Trihalomethanes    8 2011    66.40   16.08    66.54    66.53   15.79   8.58
+Turbidity          9 2011     3.97    0.78     3.97     3.97    0.79   1.45
+Potability*       10 2011     1.40    0.49     1.00     1.38    0.00   1.00
+                     max    range  skew kurtosis     se
+ph                 14.00    13.77  0.05     0.61   0.04
+Hardness          317.34   243.85 -0.09     0.52   0.73
+Solids          56488.67 56167.73  0.60     0.34 192.72
+Chloramines        13.13    11.74  0.01     0.54   0.04
+Sulfate           481.03   352.03 -0.05     0.78   0.92
+Conductivity      753.34   551.72  0.27    -0.24   1.80
+Organic_carbon     27.01    24.81 -0.02     0.03   0.07
+Trihalomethanes   124.00   115.42 -0.05     0.22   0.36
+Turbidity           6.49     5.04 -0.03    -0.06   0.02
+Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
+</div>
+</div>
 <p><a href="Modeling.html">Click here for the Modeling Page</a></p>
 
 
