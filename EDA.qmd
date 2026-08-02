@@ -3,6 +3,46 @@ title: "EDA"
 format: html
 author: "Evan Whitfield"
 ---
+
+# Water Potability Analysis
+
+[Click here](https://www.kaggle.com/datasets/adityakadiwal/water-potability) for information about the data we will be analyzing. A summary has been given below.
+
+## About Dataset
+"Access to safe drinking-water is essential to health, a basic human right and a component of effective policy for health protection. This is important as a health and development issue at a national, regional and local level."
+
+## Variables
+
+ - pH value:
+PH is an important parameter in evaluating the acid–base balance of water
+
+ - Hardness:
+Hardness is mainly caused by calcium and magnesium salts.
+
+ - Solids (Total dissolved solids - TDS):
+A wide range of inorganic and some organic minerals or salts such as potassium, calcium, sodium, bicarbonates, chlorides, magnesium, sulfates etc can be produced giving un-wanted taste and diluted color.
+
+ - Chloramines:
+Chlorine and chloramine are the major disinfectants used in public water systems
+
+ - Sulfate:
+Sulfates are naturally occurring substances that are found in minerals, soil, and rocks
+
+ - Conductivity:
+Pure water is not a good conductor of electric current but rather is a good insulator. 
+
+ - Organic_carbon:
+Total Organic Carbon (TOC) in source waters comes from decaying natural organic matter (NOM) as well as synthetic sources.
+
+ - Trihalomethanes:
+THMs are chemicals which may be found in water treated with chlorine.
+
+ - Turbidity:
+The turbidity of water depends on the quantity of solid matter present in the suspended state.
+
+ - Potability:
+Indicates if water is safe for human consumption
+
 ```{r}
 library(readr)
 library(tidyr)
@@ -108,6 +148,28 @@ water_data_trimmed |>
   cor(use = "complete.obs") |>
   round(3)
 ```
+
+```{r}
+water_data_trimmed |>
+  pivot_longer(
+    cols = c(Hardness, Solids, Chloramines, Sulfate,
+             Conductivity, Organic_carbon,
+             Trihalomethanes, Turbidity),
+    names_to = "Variable",
+    values_to = "Value"
+  ) |>
+  ggplot(aes(x = ph, y = Value, color = Potability)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ Variable, scales = "free_y") +
+  labs(
+    title = "Relationship Between pH and Other Variables",
+    x = "pH",
+    y = "Value",
+    color = "Potability"
+  )
+```
+
 
 
 [Click here for the Modeling Page](Modeling.html)
