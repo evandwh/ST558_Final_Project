@@ -8,6 +8,8 @@ library(readr)
 library(tidyr)
 library(dplyr)
 library(psych)
+library(ggplot2)
+
 water_data <- read_csv("Data/water_potability.csv")
 water_data <- water_data |>
   mutate(Potability = factor(Potability,
@@ -35,6 +37,76 @@ water_data_trimmed <- water_data |>
   drop_na()
 
 describe(water_data_trimmed)
+```
+
+```{r}
+water_data_trimmed |>
+  group_by(Potability) |>
+  summarize(count = n())
+```
+
+```{r}
+water_data_trimmed |>
+  group_by(Potability) |>
+  summarize(mean_ph = mean(ph), 
+            median_ph = median(ph))
+```
+
+
+```{r}
+water_data_trimmed |>
+  group_by(Potability) |>
+  summarize(across(where(is.numeric),
+      .fns = list(
+        mean = mean,
+        median = median,
+        var = var,
+        sd = sd,
+        IQR = IQR
+      ),
+      .names = "{.fn}_{.col}"
+    )
+  ) |>
+  pivot_longer(
+    -Potability,
+    names_to = c("Variable", "Statistic"),
+    names_sep = "_",
+    values_to = "Value"
+  ) |>
+  pivot_wider(
+    names_from = Potability,
+    values_from = Value
+  ) |>
+  mutate(across(where(is.numeric), ~round(.x, 3)))
+```
+
+
+```{r}
+water_data_trimmed |>
+  pivot_longer(
+    cols = c(ph, Hardness, Solids, Chloramines, Sulfate,
+             Conductivity, Organic_carbon,
+             Trihalomethanes, Turbidity),
+    names_to = "Variable",
+    values_to = "Value"
+  ) |>
+  ggplot(aes(x = Value, fill = Potability)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~ Variable, scales = "free") +
+  labs(
+    title = "Density Plots of Variables by Potability",
+    x = "Value",
+    y = "Density",
+    fill = "Potability"
+  )
+```
+
+
+```{r}
+water_data_trimmed |>
+  select(where(is.numeric)) |>
+  cor(use = "complete.obs") |>
+  round(3)
 ```
 
 
