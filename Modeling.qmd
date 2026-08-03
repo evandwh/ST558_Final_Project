@@ -4,3 +4,164 @@ format: html
 author: "Evan Whitfield"
 ---
 
+```{r}
+library(tidymodels)
+
+set.seed(123)
+
+water_split <- initial_split(
+  water_data_trimmed,
+  prop = 0.70,
+  strata = Potability
+)
+
+water_train <- training(water_split)
+water_test  <- testing(water_split)
+```
+
+```{r}
+water_test |>
+  group_by(Potability) |>
+  summarize(count = n()) |>
+  mutate(proportion = count / sum(count))
+```
+
+```{r}
+water_train |>
+  group_by(Potability) |>
+  summarize(count = n()) |>
+  mutate(proportion = count / sum(count))
+```
+
+
+```{r}
+water_folds <- vfold_cv(
+  water_train,
+  v = 5,
+  strata = Potability
+)
+```
+
+
+```{r}
+water_recipe <-
+  recipe(Potability ~ ., data = water_train)
+```
+
+
+```{r}
+tree_model <-
+  decision_tree(
+    cost_complexity = tune(),
+    mode = "classification"
+  ) |>
+  set_engine("rpart")
+```
+
+```{r}
+tree_workflow <-
+  workflow() |>
+  add_recipe(water_recipe) |>
+  add_model(tree_model)
+```
+
+
+```{r}
+tree_grid <-
+  tibble(
+    cost_complexity = 10^seq(-5, -1, length.out = 20)
+  )
+```
+
+
+
+```{r}
+tree_results <-
+  tune_grid(
+    tree_workflow,
+    resamples = water_folds,
+    grid = tree_grid,
+    metrics = metric_set(mn_log_loss)
+  )
+```
+```{r}
+collect_metrics(tree_results) |>
+  arrange(mean)
+
+autoplot(tree_results)
+```
+
+
+
+```{r}
+best_tree <- select_best(tree_results, metric = "mn_log_loss")
+
+best_tree
+```
+
+```{r}
+final_tree <- finalize_workflow(tree_workflow, best_tree)
+
+final_tree
+```
+
+```{r}
+rf_model <-
+  rand_forest(
+    mtry = tune(),
+    trees = 500,
+    mode = "classification"
+  ) |>
+  set_engine("ranger")
+```
+
+```{r}
+rf_workflow <-
+  workflow() |>
+  add_recipe(water_recipe) |>
+  add_model(rf_model)
+```
+
+```{r}
+rf_grid <- tibble(mtry = 1:9)
+```
+
+```{r}
+rf_results <-
+  tune_grid(
+    rf_workflow,
+    resamples = water_folds,
+    grid = rf_grid,
+    metrics = metric_set(mn_log_loss)
+  )
+```
+
+
+```{r}
+best_rf <- select_best(rf_results, metric = "mn_log_loss")
+
+final_rf <- finalize_workflow(rf_workflow, best_rf)
+```
+
+
+```{r}
+tree_fit <-fit(final_tree, data = water_train)
+
+rf_fit <-fit(final_rf, data = water_train)
+```
+
+
+```{r}
+tree_predictions <-
+  predict(tree_fit,
+          water_test,
+          type = "prob") |>
+  bind_cols(water_test)
+
+mn_log_loss(
+  tree_predictions,
+  truth = Potability,
+  `.pred_Potable`
+)
+```
+
