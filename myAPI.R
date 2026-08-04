@@ -2,17 +2,20 @@ library(plumber)
 library(tidymodels)
 library(ggplot2)
 library(dplyr)
-library(yardstick)
+library(readr)
 
+#--------------------------------------------------
 # Read in data
-
+#--------------------------------------------------
 water_data <- read_csv("Data/water_potability.csv") |>
   mutate(Potability = factor(Potability,
                              levels = c(0, 1),
                              labels = c("Not Potable", "Potable"))) |>
   drop_na()
 
+#--------------------------------------------------
 # Fit best model on entire data
+#--------------------------------------------------
 
 rf_recipe <-
   recipe(Potability ~ ., data = water_data)
@@ -29,6 +32,10 @@ rf_workflow <-
   workflow() |>
   add_recipe(rf_recipe) |>
   add_model(rf_spec)
+
+# setting a seed here to make the confusion matrix reproducible
+# commit out if needed!
+set.seed(123)
 
 rf_fit <- fit(rf_workflow, data = water_data)
 
@@ -58,7 +65,7 @@ mean_turbidity <- mean(water_data$Turbidity)
 #* @param Trihalomethanes
 #* @param Turbidity
 #* @get /pred
-
+#--------------------------------------------------
 function(
     ph = mean_ph,
     Hardness = mean_hardness,
@@ -89,18 +96,17 @@ function(
 # -------------------------------------------------
 # Example URLs
 #
-# http://127.0.0.1:48521/pred?ph=7.086&Hardness=195.9681&Solids=21917.4414&Chloramines=7.1343&Sulfate=333.2247&Conductivity=426.5264&Organic_carbon=14.3577&Trihalomethanes=66.4009&Turbidity=3.9697
+# http://127.0.0.1:8000/pred?ph=7.086&Hardness=195.9681&Solids=21917.4414&Chloramines=7.1343&Sulfate=333.2247&Conductivity=426.5264&Organic_carbon=14.3577&Trihalomethanes=66.4009&Turbidity=3.9697
 #
-# http://127.0.0.1:48521/pred?ph=4&Hardness=195.9681&Solids=24000&Chloramines=7.1343&Sulfate=333.2247&Conductivity=426.5264&Organic_carbon=14.3577&Trihalomethanes=66.4009&Turbidity=3.9697
+# http://127.0.0.1:8000/pred?ph=4&Hardness=195.9681&Solids=24000&Chloramines=7.1343&Sulfate=333.2247&Conductivity=426.5264&Organic_carbon=14.3577&Trihalomethanes=66.4009&Turbidity=3.9697
 #
-# http://127.0.0.1:48521/pred?ph=12&Hardness=200&Solids=21917.4414&Chloramines=7.1343&Sulfate=333.2247&Conductivity=426.5264&Organic_carbon=17&Trihalomethanes=68&Turbidity=4
-
-
-
+# http://127.0.0.1:8000/pred?ph=12&Hardness=200&Solids=21917.4414&Chloramines=7.1343&Sulfate=333.2247&Conductivity=426.5264&Organic_carbon=17&Trihalomethanes=68&Turbidity=4
 #--------------------------------------------------
+
+# -------------------------------------------------
 #* Information
 #* @get /info
-
+# -------------------------------------------------
 function(){
   
   list(
@@ -114,7 +120,7 @@ function(){
 #* Confusion Matrix Plot
 #* @serializer png
 #* @get /confusion
-
+#--------------------------------------------------
 function(){
   
   preds <- predict(rf_fit, water_data) |>
@@ -128,7 +134,7 @@ function(){
   p <- ggplot(as.data.frame(cm$table), 
               aes(x = Truth, y = Prediction, fill = Freq)) +
     geom_tile() +
-    geom_text(ggplot2::aes(label = Freq), color = "white")
+    geom_text(aes(label = Freq), color = "white")
   
   print(p)
   }

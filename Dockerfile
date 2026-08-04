@@ -5,9 +5,13 @@ FROM rstudio/plumber
 RUN apt-get update -qq && apt-get install -y  libssl-dev  libcurl4-gnutls-dev  libpng-dev pandoc 
     
 # install plumber, GGally
-RUN R -e "install.packages(c('tinymodels','ggplot2','dplyr','yardstick')"
+RUN R -e "install.packages(c('tidymodels','ggplot2','dplyr','readr','ranger'))"
 
-# copy myAPI.R from the current directory into the container
+# set up working directory for data
+WORKDIR /app
+
+# copy myAPI.R and data from the current directory into the container
+COPY Data/ Data/
 COPY myAPI.R myAPI.R
 
 # open port to traffic
