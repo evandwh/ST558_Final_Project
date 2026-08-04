@@ -204,6 +204,9 @@ dbl (10): ph, Hardness, Solids, Chloramines, Sulfate, Conductivity, Organic_...
 </div>
 </div>
 <p>Here we can see that all of our numeric variables are read in as <code>dbl</code> type accurately. There are 3276 observations, however, we can see that there are NA values in the pH and Sulfate column.</p>
+</section>
+<section id="beginning-data-dive" class="level2">
+<h2 class="anchored" data-anchor-id="beginning-data-dive">Beginning Data Dive</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(water_data_raw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -290,6 +293,10 @@ Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
 </div>
 </div>
 <p>After dropping all NA observations, we still have over 2000 data observations. This should be more than plenty. If it is found that three variables with NA entries are not important to our models, we can add back in the removed data and recalculate the models, if need be.</p>
+</section>
+<section id="data-summary" class="level2">
+<h2 class="anchored" data-anchor-id="data-summary">Data Summary</h2>
+<p>Potability will be used as our response variable for our model fitting. We will group by Potability status for our summary.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="sc">|&gt;</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Potability) <span class="sc">|&gt;</span></span>
@@ -302,6 +309,9 @@ Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
 2 Potable       811</code></pre>
 </div>
 </div>
+<p>Out of our 2011 observations, 1200 were Not Potable water and 811 were Potable.</p>
+<section id="uni-variate-exploration" class="level3">
+<h3 class="anchored" data-anchor-id="uni-variate-exploration">Uni-Variate Exploration</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="sc">|&gt;</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Potability) <span class="sc">|&gt;</span></span>
@@ -315,6 +325,9 @@ Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
 2 Potable        7.11      7.05</code></pre>
 </div>
 </div>
+<p>It appears that Potable water had a slightly higher mean and median pH than Not Potable water. However, the values are fairly close with standard deviations that might lead us to believe that they are not statistically significant. That is not our purpose in this study, but it could warrant further study.</p>
+<section id="numerical-summaries" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-summaries">Numerical Summaries</h4>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="sc">|&gt;</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Potability) <span class="sc">|&gt;</span></span>
@@ -326,20 +339,19 @@ Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
 <span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd =</span> sd,</span>
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">IQR =</span> IQR</span>
 <span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>      ),</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">.names =</span> <span class="st">"{.fn}_{.col}"</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span>Potability,</span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Statistic"</span>),</span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_sep =</span> <span class="st">"_"</span>,</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"Value"</span></span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_from =</span> Potability,</span>
-<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_from =</span> Value</span>
-<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span><span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">.names =</span> <span class="st">"{.fn}_{.col}"</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span>Potability,</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Statistic"</span>),</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_sep =</span> <span class="st">"_"</span>,</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"Value"</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_from =</span> Potability,</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_from =</span> Value</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span><span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Expected 2 pieces. Additional pieces discarded in 5 rows [31, 32, 33,
 34, 35].</code></pre>
@@ -361,6 +373,10 @@ Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
 # ℹ 35 more rows</code></pre>
 </div>
 </div>
+<p>Now that we have the summary information about each variable, we can see that there is not much difference between the Potable and Not Potable water. A further, deeper T-test could tell us if any of these values are statistically significant (again, not our purpose). However, on quick glance, there does seem to be any obviously significant differences for us to focus on.</p>
+</section>
+<section id="graphical-summaries" class="level4">
+<h4 class="anchored" data-anchor-id="graphical-summaries">Graphical Summaries</h4>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="sc">|&gt;</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
@@ -387,6 +403,11 @@ Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
 </div>
 </div>
 </div>
+<p>This is backed up by the graphs above. Each density plot is grouped by Potability status. Many of the variables have a similar distribution for each Potability status. Sulfate, pH, and hardness seem to be the three variables with the most notable differences. However, the distributions have similar center values, but different spreads. Initial intuition would have guessed that the centers might also be different leading to a change in Potability status. That does not appear to be the case.</p>
+</section>
+</section>
+<section id="bi-variate-exploration" class="level3">
+<h3 class="anchored" data-anchor-id="bi-variate-exploration">Bi-Variate Exploration</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="sc">|&gt;</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">|&gt;</span></span>
@@ -415,6 +436,7 @@ Trihalomethanes         -0.006           1.000    -0.020
 Turbidity               -0.015          -0.020     1.000</code></pre>
 </div>
 </div>
+<p>Since there is not any obvious signs from a signal variable to influence Potability status, maybe there is a connection between two variables. The above <code>correlation matrix</code> shows that there is not a strong correlation between any variables. The strongest magnitude correlation is between Sulfate and Solids at r = -0.163. This is still a weak correlation, and most of the other r values are less than 0.02 in magnitude.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="sc">|&gt;</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
@@ -445,9 +467,13 @@ Turbidity               -0.015          -0.020     1.000</code></pre>
 </div>
 </div>
 </div>
+<p>These graphs show the relationship between pH and all other numeric variables. The strongest correlation between these is pH vs.&nbsp;Hardness at r = 0.103. Every scatter plot shows mostly a random scatter of points.</p>
+<p>Because the other variables have similar correlation values, it stands to reason that the scatter plots of other variables on the x-axis would yield similar graphs.</p>
+<p>There does not appear to be a single or pair of variables that would accurately predict the potability of water. We will need to create a model that incorporates many (if not all) of these variables to predict Potability.</p>
 <p><a href="Modeling.html">Click here for the Modeling Page</a></p>
 
 
+</section>
 </section>
 </section>
 

@@ -63,6 +63,8 @@ water_data_raw <- read_csv("Data/water_potability.csv") |>
 water_data_raw
 ```
 Here we can see that all of our numeric variables are read in as `dbl` type accurately. There are 3276 observations, however, we can see that there are NA values in the pH and Sulfate column.
+
+## Beginning Data Dive
 ```{r}
 str(water_data_raw)
 ```
@@ -84,12 +86,17 @@ describe(water_data)
 ```
 After dropping all NA observations, we still have over 2000 data observations. This should be more than plenty. If it is found that three variables with NA entries are not important to our models, we can add back in the removed data and recalculate the models, if need be.
 
+## Data Summary
 
+Potability will be used as our response variable for our model fitting. We will group by Potability status for our summary.
 ```{r}
 water_data |>
   group_by(Potability) |>
   summarize(count = n())
 ```
+Out of our 2011 observations, 1200 were Not Potable water and 811 were Potable.
+
+### Uni-Variate Exploration
 
 ```{r}
 water_data |>
@@ -97,7 +104,9 @@ water_data |>
   summarize(mean_ph = mean(ph), 
             median_ph = median(ph))
 ```
+It appears that Potable water had a slightly higher mean and median pH than Not Potable water. However, the values are fairly close with standard deviations that might lead us to believe that they are not statistically significant. That is not our purpose in this study, but it could warrant further study.
 
+#### Numerical Summaries
 
 ```{r}
 water_data |>
@@ -110,8 +119,7 @@ water_data |>
         sd = sd,
         IQR = IQR
       ),
-      .names = "{.fn}_{.col}"
-    )
+      .names = "{.fn}_{.col}")
   ) |>
   pivot_longer(
     -Potability,
@@ -125,7 +133,9 @@ water_data |>
   ) |>
   mutate(across(where(is.numeric), ~round(.x, 3)))
 ```
+Now that we have the summary information about each variable, we can see that there is not much difference between the Potable and Not Potable water. A further, deeper T-test could tell us if any of these values are statistically significant (again, not our purpose). However, on quick glance, there does seem to be any obviously significant differences for us to focus on.
 
+#### Graphical Summaries
 
 ```{r}
 water_data |>
@@ -146,7 +156,9 @@ water_data |>
     fill = "Potability"
   )
 ```
+This is backed up by the graphs above. Each density plot is grouped by Potability status. Many of the variables have a similar distribution for each Potability status. Sulfate, pH, and hardness seem to be the three variables with the most notable differences. However, the distributions have similar center values, but different spreads. Initial intuition would have guessed that the centers might also be different leading to a change in Potability status. That does not appear to be the case.
 
+### Bi-Variate Exploration
 
 ```{r}
 water_data |>
@@ -154,6 +166,7 @@ water_data |>
   cor(use = "complete.obs") |>
   round(3)
 ```
+Since there is not any obvious signs from a signal variable to influence Potability status, maybe there is a connection between two variables. The above `correlation matrix` shows that there is not a strong correlation between any variables. The strongest magnitude correlation is between Sulfate and Solids at r = -0.163. This is still a weak correlation, and most of the other r values are less than 0.02 in magnitude.
 
 ```{r}
 water_data |>
@@ -176,6 +189,10 @@ water_data |>
   )
 ```
 
+These graphs show the relationship between pH and all other numeric variables. The strongest correlation between these is pH vs. Hardness at r = 0.103. Every scatter plot shows mostly a random scatter of points.
 
+Because the other variables have similar correlation values, it stands to reason that the scatter plots of other variables on the x-axis would yield similar graphs.
+
+There does not appear to be a single or pair of variables that would accurately predict the potability of water. We will need to create a model that incorporates many (if not all) of these variables to predict Potability.
 
 [Click here for the Modeling Page](Modeling.html)
