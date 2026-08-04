@@ -52,6 +52,8 @@ library(psych)
 library(ggplot2)
 ```
 
+## Read in Data
+First we will read in the data. Since we know that Potability is our only categorical variable - and only has values of 0 and 1 - we will make it a factor variable. This will help us by giving us the text on if the water is potable or not instead of having to remember what a 0 or a 1 meant.
 ```{r}
 water_data_raw <- read_csv("Data/water_potability.csv") |>
   mutate(Potability = factor(Potability,
@@ -60,26 +62,28 @@ water_data_raw <- read_csv("Data/water_potability.csv") |>
 
 water_data_raw
 ```
-
+Here we can see that all of our numeric variables are read in as `dbl` type accurately. There are 3276 observations, however, we can see that there are NA values in the pH and Sulfate column.
 ```{r}
 str(water_data_raw)
 ```
-
+The structure of our data looks solid. Now let us look at the individual variables to see if everything looks good there.
 ```{r}
 describe(water_data_raw)
 ```
-
+The only noteworthy pieces of info at this point is that `n` is different for some of the variables due to the presence of NA entries. Also, not that it will mean much to us, but due to changing Potability to a factor variable, the values are now counted as 1s and 2s instead of 0s and 1s. This is why our mean is allowed to be greater than 1, despite the variable only being coded as 0s and 1s originally. Since Potability is considered a categorical variable, we do not need these summary statistics of it, but at first glance it appears that the data would have been entered or read incorrectly. All is fine!
 
 ```{r}
 colSums(is.na(water_data_raw))
 ```
-
+Three variables have NA entries: pH, Sulfate, and Trihalomethanes. Here, we made a decision to remove all observations with NA values for any variable. We could have kept all observations, but removed these variables from our investigation. However, pH is known to be a very important value for liquids and should be considered for Potability.
 ```{r}
 water_data <- water_data_raw |>
   drop_na()
 
 describe(water_data)
 ```
+After dropping all NA observations, we still have over 2000 data observations. This should be more than plenty. If it is found that three variables with NA entries are not important to our models, we can add back in the removed data and recalculate the models, if need be.
+
 
 ```{r}
 water_data |>

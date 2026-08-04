@@ -166,6 +166,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p><strong>Turbidity:</strong> The turbidity of water depends on the quantity of solid matter present in the suspended state.</p></li>
 <li><p><strong>Potability:</strong> Indicates if water is safe for human consumption</p></li>
 </ul>
+</section>
+<section id="read-in-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-data">Read in Data</h2>
+<p>First we will read in the data. Since we know that Potability is our only categorical variable - and only has values of 0 and 1 - we will make it a factor variable. This will help us by giving us the text on if the water is potable or not instead of having to remember what a 0 or a 1 meant.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>water_data_raw <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Data/water_potability.csv"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Potability =</span> <span class="fu">factor</span>(Potability,</span>
@@ -199,6 +203,7 @@ dbl (10): ph, Hardness, Solids, Chloramines, Sulfate, Conductivity, Organic_...
 # ℹ 3 more variables: Trihalomethanes &lt;dbl&gt;, Turbidity &lt;dbl&gt;, Potability &lt;fct&gt;</code></pre>
 </div>
 </div>
+<p>Here we can see that all of our numeric variables are read in as <code>dbl</code> type accurately. There are 3276 observations, however, we can see that there are NA values in the pH and Sulfate column.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(water_data_raw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -215,6 +220,7 @@ dbl (10): ph, Hardness, Solids, Chloramines, Sulfate, Conductivity, Organic_...
  $ Potability     : Factor w/ 2 levels "Not Potable",..: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
 </div>
 </div>
+<p>The structure of our data looks solid. Now let us look at the individual variables to see if everything looks good there.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(water_data_raw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -242,6 +248,7 @@ Turbidity           6.74     5.29 -0.01    -0.07   0.01
 Potability*         2.00     1.00  0.45    -1.80   0.01</code></pre>
 </div>
 </div>
+<p>The only noteworthy pieces of info at this point is that <code>n</code> is different for some of the variables due to the presence of NA entries. Also, not that it will mean much to us, but due to changing Potability to a factor variable, the values are now counted as 1s and 2s instead of 0s and 1s. This is why our mean is allowed to be greater than 1, despite the variable only being coded as 0s and 1s originally. Since Potability is considered a categorical variable, we do not need these summary statistics of it, but at first glance it appears that the data would have been entered or read incorrectly. All is fine!</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(water_data_raw))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -251,6 +258,7 @@ Potability*         2.00     1.00  0.45    -1.80   0.01</code></pre>
               0               0             162               0               0 </code></pre>
 </div>
 </div>
+<p>Three variables have NA entries: pH, Sulfate, and Trihalomethanes. Here, we made a decision to remove all observations with NA values for any variable. We could have kept all observations, but removed these variables from our investigation. However, pH is known to be a very important value for liquids and should be considered for Potability.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="ot">&lt;-</span> water_data_raw <span class="sc">|&gt;</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span>
@@ -281,6 +289,7 @@ Turbidity           6.49     5.04 -0.03    -0.06   0.02
 Potability*         2.00     1.00  0.39    -1.85   0.01</code></pre>
 </div>
 </div>
+<p>After dropping all NA observations, we still have over 2000 data observations. This should be more than plenty. If it is found that three variables with NA entries are not important to our models, we can add back in the removed data and recalculate the models, if need be.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>water_data <span class="sc">|&gt;</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Potability) <span class="sc">|&gt;</span></span>
