@@ -35,8 +35,6 @@ rf_workflow <-
 
 # setting a seed here to make the confusion matrix reproducible
 # commit out if needed!
-set.seed(123)
-
 rf_fit <- fit(rf_workflow, data = water_data)
 
 #--------------------------------------------------

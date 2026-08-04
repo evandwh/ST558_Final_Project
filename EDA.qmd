@@ -13,79 +13,82 @@ author: "Evan Whitfield"
 
 ## Variables
 
- - pH value:
+ - **pH value:**
 PH is an important parameter in evaluating the acid–base balance of water
 
- - Hardness:
+ - **Hardness:**
 Hardness is mainly caused by calcium and magnesium salts.
 
- - Solids (Total dissolved solids - TDS):
+ - **Solids** (Total dissolved solids - TDS):
 A wide range of inorganic and some organic minerals or salts such as potassium, calcium, sodium, bicarbonates, chlorides, magnesium, sulfates etc can be produced giving un-wanted taste and diluted color.
 
- - Chloramines:
+ - **Chloramines:**
 Chlorine and chloramine are the major disinfectants used in public water systems
 
- - Sulfate:
+ - **Sulfate:**
 Sulfates are naturally occurring substances that are found in minerals, soil, and rocks
 
- - Conductivity:
+ - **Conductivity:**
 Pure water is not a good conductor of electric current but rather is a good insulator. 
 
- - Organic_carbon:
+ - **Organic_carbon:**
 Total Organic Carbon (TOC) in source waters comes from decaying natural organic matter (NOM) as well as synthetic sources.
 
- - Trihalomethanes:
+ - **Trihalomethanes:**
 THMs are chemicals which may be found in water treated with chlorine.
 
- - Turbidity:
+ - **Turbidity:**
 The turbidity of water depends on the quantity of solid matter present in the suspended state.
 
- - Potability:
+ - **Potability:**
 Indicates if water is safe for human consumption
 
 ```{r}
+#| include: false
 library(readr)
 library(tidyr)
 library(dplyr)
 library(psych)
 library(ggplot2)
+```
 
-water_data <- read_csv("Data/water_potability.csv") |>
+```{r}
+water_data_raw <- read_csv("Data/water_potability.csv") |>
   mutate(Potability = factor(Potability,
                              levels = c(0, 1),
                              labels = c("Not Potable", "Potable")))
 
-water_data
+water_data_raw
 ```
 
 ```{r}
-str(water_data)
+str(water_data_raw)
 ```
 
 ```{r}
+describe(water_data_raw)
+```
+
+
+```{r}
+colSums(is.na(water_data_raw))
+```
+
+```{r}
+water_data <- water_data_raw |>
+  drop_na()
+
 describe(water_data)
 ```
 
-
 ```{r}
-colSums(is.na(water_data))
-```
-
-```{r}
-water_data_trimmed <- water_data |>
-  drop_na()
-
-describe(water_data_trimmed)
-```
-
-```{r}
-water_data_trimmed |>
+water_data |>
   group_by(Potability) |>
   summarize(count = n())
 ```
 
 ```{r}
-water_data_trimmed |>
+water_data |>
   group_by(Potability) |>
   summarize(mean_ph = mean(ph), 
             median_ph = median(ph))
@@ -93,7 +96,7 @@ water_data_trimmed |>
 
 
 ```{r}
-water_data_trimmed |>
+water_data |>
   group_by(Potability) |>
   summarize(across(where(is.numeric),
       .fns = list(
@@ -121,7 +124,7 @@ water_data_trimmed |>
 
 
 ```{r}
-water_data_trimmed |>
+water_data |>
   pivot_longer(
     cols = c(ph, Hardness, Solids, Chloramines, Sulfate,
              Conductivity, Organic_carbon,
@@ -142,14 +145,14 @@ water_data_trimmed |>
 
 
 ```{r}
-water_data_trimmed |>
+water_data |>
   select(where(is.numeric)) |>
   cor(use = "complete.obs") |>
   round(3)
 ```
 
 ```{r}
-water_data_trimmed |>
+water_data |>
   pivot_longer(
     cols = c(Hardness, Solids, Chloramines, Sulfate,
              Conductivity, Organic_carbon,

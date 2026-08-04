@@ -5,12 +5,25 @@ author: "Evan Whitfield"
 ---
 
 ```{r}
+#| include: false
 library(tidymodels)
+library(plotly)
+library(readr)
+```
 
+```{r}
+water_data <- read_csv("Data/water_potability.csv") |>
+  mutate(Potability = factor(Potability,
+                             levels = c(0, 1),
+                             labels = c("Not Potable", "Potable"))) |>
+  drop_na()
+```
+
+```{r}
 set.seed(123)
 
 water_split <- initial_split(
-  water_data_trimmed,
+  water_data,
   prop = 0.70,
   strata = Potability
 )
@@ -90,11 +103,31 @@ tree_results <-
     metrics = metric_set(mn_log_loss)
   )
 ```
+
 ```{r}
 collect_metrics(tree_results) |>
   arrange(mean)
+```
 
-autoplot(tree_results)
+```{r}
+tree_metrics_df <- collect_metrics(tree_results) |>
+  mutate(hover_text = paste0("Cost Complexity: ", cost_complexity, 
+                             "<br>Mean Log Loss: ", round(mean, 4),
+                             "<br>Std Error: ", round(std_err, 4)))
+
+p <- ggplot(tree_metrics_df, 
+            aes(x = cost_complexity, 
+                y = mean, 
+                text = hover_text)) +
+  geom_line(color = "lightblue", group = 1) +
+  geom_point(color = "blue", size = 3) +
+  labs(
+    title = "Classification Tree Tuning Results",
+    x = "Cost Complexity",
+    y = "Mean Log Loss"
+  )
+
+ggplotly(p, tooltip = "text")
 ```
 
 
@@ -148,6 +181,35 @@ rf_results <-
     grid = rf_grid,
     metrics = metric_set(mn_log_loss)
   )
+
+collect_metrics(rf_results) |>
+  arrange(mean)
+```
+
+```{r}
+rf_metrics_df <- collect_metrics(rf_results) |>
+  mutate(hover_text = paste0("mtry: ", mtry, 
+                             "<br>Mean Log Loss: ", round(mean, 4),
+                             "<br>Std Error: ", round(std_err, 4)))
+
+q <- ggplot(rf_metrics_df, 
+            aes(x = mtry, 
+                y = mean, 
+                text = hover_text)) +
+  geom_errorbar(
+    aes(ymin = mean - std_err, ymax = mean + std_err),
+    width = 0.2,
+    color = "black"
+  ) +
+  geom_line(color = "lightblue", group = 1) +
+  geom_point(color = "blue", size = 3) +
+  labs(
+    title = "Random Forest Tuning Results",
+    x = "mtry",
+    y = "Mean Log Loss"
+  )
+
+ggplotly(q, tooltip = "text")
 ```
 
 
