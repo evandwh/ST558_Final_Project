@@ -10,7 +10,7 @@ library(tidymodels)
 library(plotly)
 library(readr)
 ```
-
+## Read in Data
 ```{r}
 water_data <- read_csv("Data/water_potability.csv") |>
   mutate(Potability = factor(Potability,
@@ -18,6 +18,10 @@ water_data <- read_csv("Data/water_potability.csv") |>
                              labels = c("Not Potable", "Potable"))) |>
   drop_na()
 ```
+
+### Train/Test Split
+
+For reproducibility, we will set a seed here. Then, we will split our data into a training set and a test set. We do not want to train our model on the entire 2011 observations, so we will split them into two different sets. We want the sets to have similar propertion of Potability and Not Potable water, so we will strata the data based off of Potability status.
 
 ```{r}
 set.seed(123)
@@ -45,7 +49,11 @@ water_train |>
   summarize(count = n()) |>
   mutate(proportion = count / sum(count))
 ```
+Both the test set and training set have the same proportion of Potable and Not Potable observations.
 
+### 5-Fold Cross Validation
+
+In order to create our models, we will create a 5-fold cross validation, also stratified based on Potability status. This will ensure that each fold has at least similar proportion of Potable and Not Potable water observations to train our models.
 
 ```{r}
 water_folds <- vfold_cv(
@@ -61,13 +69,13 @@ water_recipe <-
   recipe(Potability ~ ., data = water_train)
 ```
 
-5. Classification Tree
-Explanation
+## Classification Tree 
 
-A classification tree is a supervised learning algorithm used when the response variable is categorical. The algorithm recursively partitions the predictor space by selecting variables and split points that best separate the classes. Beginning at the root node, observations are divided into increasingly homogeneous groups until a stopping criterion is met. Each terminal node predicts the class that is most common among the training observations in that region.
+A classification tree is a supervised learning algorithm used when the response variable is categorical. In our case, Potability, is our response variable. The algorithm recursively partitions the predictor space by selecting variables and split points that best separate the classes. Beginning at the root node, observations are divided into increasingly homogeneous groups until a stopping criterion is met. Each terminal node predicts the class that is most common among the training observations in that region.
 
 One of the main tuning parameters is the complexity parameter (cost complexity). Larger values produce smaller, simpler trees by penalizing additional splits, while smaller values allow more complex trees that may better fit the training data but increase the risk of overfitting. Cross-validation is used to identify the complexity parameter that provides the best balance between model complexity and predictive performance.
 
+### Tree Model Building
 ```{r}
 tree_model <-
   decision_tree(
@@ -84,7 +92,7 @@ tree_workflow <-
   add_model(tree_model)
 ```
 
-
+Here will we add our possible cost complexity metrics we will use to train our model. We are looking for the best metric.
 ```{r}
 tree_grid <-
   tibble(
@@ -93,7 +101,7 @@ tree_grid <-
 ```
 
 
-
+Now we will apply our different possible cost complexities to our training data and record the `mn_log_loss`. The lower this value, the better our model predicted.
 ```{r}
 tree_results <-
   tune_grid(
@@ -108,6 +116,9 @@ tree_results <-
 collect_metrics(tree_results) |>
   arrange(mean)
 ```
+Although, it is really close between the mean mn_log_loss of our four best parameters, the Cost Complexity of 0.0379 produced the lowest value. Further study is needed to see if there is any statistical significance between these values, but we will simply go with this Cost Complexity for now.
+
+### Cost Complexity Graph
 
 ```{r}
 tree_metrics_df <- collect_metrics(tree_results) |>
@@ -129,9 +140,10 @@ p <- ggplot(tree_metrics_df,
 
 ggplotly(p, tooltip = "text")
 ```
+Visually, there is not much difference between the last four cost complexity values. However, if you hover over the point with a Cost Complexity of 0.0379, you will see that it shows the lowest mean log loss.
 
-
-
+### Using the Best Tree
+Here, we will save our best classification tree model and finalize it for later comparision.
 ```{r}
 best_tree <- select_best(tree_results, metric = "mn_log_loss")
 
@@ -143,15 +155,18 @@ final_tree <- finalize_workflow(tree_workflow, best_tree)
 
 final_tree
 ```
-6. Random Forest
-Explanation
 
-A random forest is an ensemble learning method that builds upon the basic classification tree. Instead of constructing a single tree, a random forest grows hundreds of decision trees using bootstrap samples of the training data. At each split, only a random subset of predictors is considered, increasing diversity among the trees. Final predictions are obtained by combining the predictions from all trees through majority voting.
+## Random Forest Model
+
+A random forest is an ensemble learning method that builds upon the basic classification tree. This should mean it predicts better in the end! Instead of constructing a single tree, a random forest grows hundreds of decision trees using bootstrap samples of the training data. At each split, only a random subset of predictors is considered, increasing diversity among the trees. Final predictions are obtained by combining the predictions from all trees through majority voting.
 
 Because individual trees are highly variable, averaging many trees substantially reduces prediction variance while maintaining low bias. This generally results in better predictive performance and greater resistance to overfitting than a single classification tree.
 
-The primary tuning parameter considered here is mtry, which controls the number of randomly selected predictors considered at each split.
+The primary tuning parameter considered here is mtry, which controls the number of randomly selected predictors considered at each split. The larger mtry is, the more predictors are used.
 
+### Random Forest Model Building
+
+We want to tune mtry, but we will set the number of trees to 500.
 ```{r}
 rf_model <-
   rand_forest(
@@ -169,10 +184,12 @@ rf_workflow <-
   add_model(rf_model)
 ```
 
+Because we have a maximum of 9 predictors, we will set mtry to be anything from 1 to 9 when we train our models and see which value of mtry gives us the best result.
 ```{r}
 rf_grid <- tibble(mtry = 1:9)
 ```
 
+Time to create the forest! We will again collect the mean log loss, collect the metrics for each value of mtry and arrange them by mean. This way we can see which value produced the lowest mean log loss.
 ```{r}
 rf_results <-
   tune_grid(
@@ -185,6 +202,11 @@ rf_results <-
 collect_metrics(rf_results) |>
   arrange(mean)
 ```
+Based on results, it appears that the best performing value of mtry is mtry = 8. However, the mean log loss of mtry = 9 is remarkably close. 
+
+*As a disclaimer, I have ran these code with different seeds and mtry = 9 has appeared as the lowest mtry. I believe that there is no statistical different between some mtry = 8 and mtry = 9 based on these results. Very study is needed, but the graph below with error bars will back up my believes that there is no statistically significant difference between the two.*
+
+### Graph of mtry Performance
 
 ```{r}
 rf_metrics_df <- collect_metrics(rf_results) |>
@@ -202,6 +224,7 @@ q <- ggplot(rf_metrics_df,
     color = "black"
   ) +
   geom_line(color = "lightblue", group = 1) +
+  scale_x_continuous(breaks = 1:9) +
   geom_point(color = "blue", size = 3) +
   labs(
     title = "Random Forest Tuning Results",
@@ -211,7 +234,9 @@ q <- ggplot(rf_metrics_df,
 
 ggplotly(q, tooltip = "text")
 ```
+As you can see, the value of mtry = 8 produces the lowest mean log loss.  Any value about mtry = 5 seems to have similar results. The error bars are just one std_err above and below the mean. 
 
+*These error bars might not be the correct height (more in depth knowledge needed). However, I believe that they show that there isn't much different between the larger values of mtry for our see and random forest. I would like to see how different seeds perform in the future.*
 
 ```{r}
 best_rf <- select_best(rf_results, metric = "mn_log_loss")
