@@ -48,6 +48,12 @@ water_recipe <-
   recipe(Potability ~ ., data = water_train)
 ```
 
+5. Classification Tree
+Explanation
+
+A classification tree is a supervised learning algorithm used when the response variable is categorical. The algorithm recursively partitions the predictor space by selecting variables and split points that best separate the classes. Beginning at the root node, observations are divided into increasingly homogeneous groups until a stopping criterion is met. Each terminal node predicts the class that is most common among the training observations in that region.
+
+One of the main tuning parameters is the complexity parameter (cost complexity). Larger values produce smaller, simpler trees by penalizing additional splits, while smaller values allow more complex trees that may better fit the training data but increase the risk of overfitting. Cross-validation is used to identify the complexity parameter that provides the best balance between model complexity and predictive performance.
 
 ```{r}
 tree_model <-
@@ -104,6 +110,14 @@ final_tree <- finalize_workflow(tree_workflow, best_tree)
 
 final_tree
 ```
+6. Random Forest
+Explanation
+
+A random forest is an ensemble learning method that builds upon the basic classification tree. Instead of constructing a single tree, a random forest grows hundreds of decision trees using bootstrap samples of the training data. At each split, only a random subset of predictors is considered, increasing diversity among the trees. Final predictions are obtained by combining the predictions from all trees through majority voting.
+
+Because individual trees are highly variable, averaging many trees substantially reduces prediction variance while maintaining low bias. This generally results in better predictive performance and greater resistance to overfitting than a single classification tree.
+
+The primary tuning parameter considered here is mtry, which controls the number of randomly selected predictors considered at each split.
 
 ```{r}
 rf_model <-
@@ -152,16 +166,26 @@ rf_fit <-fit(final_rf, data = water_train)
 
 
 ```{r}
-tree_predictions <-
-  predict(tree_fit,
-          water_test,
-          type = "prob") |>
-  bind_cols(water_test)
+tree_last_fit <-
+  last_fit(
+    final_tree,
+    split = water_split,
+    metrics = metric_set(mn_log_loss)
+  )
 
-mn_log_loss(
-  tree_predictions,
-  truth = Potability,
-  `.pred_Potable`
-)
+collect_metrics(tree_last_fit)
 ```
+
+```{r}
+rf_last_fit <-
+  last_fit(
+    final_rf,
+    split = water_split,
+    metrics = metric_set(mn_log_loss)
+  )
+
+collect_metrics(rf_last_fit)
+```
+
+The `classification tree` and `random forest` models were both tuned using five-fold cross-validation with multinomial log-loss as the evaluation metric. On the independent test set, the classification tree achieved a log-loss of 0.682, while the random forest achieved a lower log-loss of 0.602. Because lower log-loss indicates better predictions, the random forest outperformed the classification tree. This result is consistent with the cross-validation results, where the random forest also achieved the lowest average log-loss, suggesting that aggregating predictions across many decision trees produced better generalization than a single classification tree.
 
