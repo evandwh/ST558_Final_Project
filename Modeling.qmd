@@ -61,10 +61,7 @@ water_folds <- vfold_cv(
   v = 5,
   strata = Potability
 )
-```
 
-
-```{r}
 water_recipe <-
   recipe(Potability ~ ., data = water_train)
 ```
@@ -238,6 +235,8 @@ As you can see, the value of mtry = 8 produces the lowest mean log loss.  Any va
 
 *These error bars might not be the correct height (more in depth knowledge needed). However, I believe that they show that there isn't much different between the larger values of mtry for our see and random forest. I would like to see how different seeds perform in the future.*
 
+### Using the Best Random Forest
+Here, we will save our best classification tree model and finalize it for later comparision.
 ```{r}
 best_rf <- select_best(rf_results, metric = "mn_log_loss")
 
@@ -245,12 +244,8 @@ final_rf <- finalize_workflow(rf_workflow, best_rf)
 ```
 
 
-```{r}
-tree_fit <-fit(final_tree, data = water_train)
-
-rf_fit <-fit(final_rf, data = water_train)
-```
-
+## Model Comparison
+We will now fit the models to our full training data and use the model to make predictions for the values in the test set using `last_fit()`. Once we have our log loss from both models on the test set, we will compare our model metrics to see which model performs the best.
 
 ```{r}
 tree_last_fit <-
@@ -274,5 +269,5 @@ rf_last_fit <-
 collect_metrics(rf_last_fit)
 ```
 
-The `classification tree` and `random forest` models were both tuned using five-fold cross-validation with multinomial log-loss as the evaluation metric. On the independent test set, the classification tree achieved a log-loss of 0.682, while the random forest achieved a lower log-loss of 0.602. Because lower log-loss indicates better predictions, the random forest outperformed the classification tree. This result is consistent with the cross-validation results, where the random forest also achieved the lowest average log-loss, suggesting that aggregating predictions across many decision trees produced better generalization than a single classification tree.
+The `classification tree` and `random forest` models were both tuned using five-fold cross-validation with multinomial log-loss as the evaluation metric. On the independent test set, the classification tree achieved a log-loss of 0.682, while the random forest achieved a lower log-loss of 0.598. Because lower log-loss indicates better predictions, the random forest outperformed the classification tree. This result is consistent with the cross-validation results, where the random forest also achieved the lowest average log-loss, suggesting that aggregating predictions across many decision trees produced better generalization than a single classification tree.
 
